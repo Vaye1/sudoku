@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>破解数独--form Charlenfield</title>
+</head>
+<body>
+<table>
+<tr>
+<script>
+document.write("<th width=\"22px\"></th>");
+for(var i=1;i<=9;i++) document.write("<th width=\"22px\">"+i.toString()+"</th>");
+</script>
+</tr>
+<script>
+for(var i=1;i<=9;i++)
+{
+document.write("<tr><td>"+i.toString()+"</td>");
+	for(var j=1;j<=9;j++) document.write("<td><input onfocus=\"this.value='';\" style=\"width:22px\" id="+i.toString()+j.toString()+"></td>");
+document.write("</tr>");
+}
+</script>
+</table>
+<script>
+var fas,hang,lie,jg,gg;
+jg = new Array(
+new Array(0,0,0,0,0,0,0,0,0,0),
+new Array(0,1,1,1,2,2,2,3,3,3),
+new Array(0,1,1,1,2,2,2,3,3,3),
+new Array(0,1,1,1,2,2,2,3,3,3),
+new Array(0,4,4,4,5,5,5,6,6,6),
+new Array(0,4,4,4,5,5,5,6,6,6),
+new Array(0,4,4,4,5,5,5,6,6,6),
+new Array(0,7,7,7,8,8,8,9,9,9),
+new Array(0,7,7,7,8,8,8,9,9,9),
+new Array(0,7,7,7,8,8,8,9,9,9)
+);
+function show(str)
+{
+	document.getElementById("staut").innerHTML=str;
+}
+function clear()
+{
+	fas=new Array();
+	hang=new Array();
+	lie=new Array();
+	gg=new Array();
+	for(var i=1;i<=9;i++)
+	{
+		fas[i]=new Array();
+		hang[i]=new Array();
+		lie[i]=new Array();
+		gg[i]=new Array();
+		for(var j=1;j<=9;j++)
+		{
+			fas[i][j]=9;
+			hang[i][j]=0;
+			gg[i][j]=0;
+			lie[i][j]=0;
+			if(!document.getElementById(i.toString()+j.toString()).value) document.getElementById(i.toString()+j.toString()).value=0;
+			document.getElementById(i.toString()+j.toString()).value=parseInt(document.getElementById(i.toString()+j.toString()).value,10)%10;
+		}
+	}
+}
+function add(x,y,z)
+{
+	var stx=Math.floor((x-1)/3)*3+1;
+	var sty=Math.floor((y-1)/3)*3+1;
+	for(var i=stx;i<=stx+2;i++)
+		for(var j=sty;j<=sty+2;j++)
+			if(hang[i][z]==0&&lie[j][z]==0) fas[i][j]--;
+	for(var i=1;i<=9;i++) if(jg[i][y]!=jg[x][y]&&hang[i][z]==0) fas[i][y]--;
+	for(var i=1;i<=9;i++) if(jg[x][i]!=jg[x][y]&&lie[i][z]==0) fas[x][i]--;
+	hang[x][z]=1;
+	lie[y][z]=1;
+	gg[jg[x][y]][z]=1;
+	document.getElementById(x.toString()+y.toString()).value=z;
+}
+function del(x,y,z)
+{
+	hang[x][z]=0;
+	lie[y][z]=0;
+	gg[jg[x][y]][z]=0;
+	document.getElementById(x.toString()+y.toString()).value=0;
+	var stx=Math.floor((x-1)/3)*3+1;
+	var sty=Math.floor((y-1)/3)*3+1;
+	for(var i=stx;i<=stx+2;i++)
+		for(var j=sty;j<=sty+2;j++)
+			if(hang[i][z]==0&&lie[j][z]==0) fas[i][j]++;
+	for(var i=1;i<=9;i++) if(jg[i][y]!=jg[x][y]&&hang[i][z]==0) fas[i][y]++;
+	for(var i=1;i<=9;i++) if(jg[x][i]!=jg[x][y]&&lie[i][z]==0) fas[x][i]++;
+ 
+}
+function dfs(deep)
+{
+	if(deep==0) return true;
+	var mx=0,my=0,mfas=10;
+	for(var i=1;i<=9;i++)
+		for(var j=1;j<=9;j++)
+			if(document.getElementById(i.toString()+j.toString()).value==0&&fas[i][j]<mfas)
+			{
+				mx=i;
+				my=j;
+				mfas=fas[i][j];
+			}
+	if(mfas==10) return false;
+	for(var i=1;i<=9;i++)
+	{
+		if(hang[mx][i]==0&&lie[my][i]==0&&gg[jg[mx][my]][i]==0)
+		{
+			add(mx,my,i);
+			if(dfs(deep-1)==true) return true;
+			del(mx,my,i);
+		}
+	}
+	return false;
+}
+function solve()
+{
+	show("solving");
+	clear();
+	var sl=0;
+	var yj=true;
+	for(var i=1;i<=9;i++)
+		for(var j=1;j<=9;j++)
+			if(document.getElementById(i.toString()+j.toString()).value!=0)	
+			{
+				var vue=document.getElementById(i.toString()+j.toString()).value;
+				if(hang[i][vue]!=0||lie[j][vue]!=0||gg[jg[i][j]][vue]!=0) yj=false;
+				add(i,j,vue);
+			}
+			else sl++;
+	if(yj&&dfs(sl)) show("Done!");
+	else show("No solution");
+}
+function reset()
+{
+	for(var i=1;i<=9;i++)
+		for(var j=1;j<=9;j++)
+			document.getElementById(i.toString()+j.toString()).value=0;
+}
+</script>
+<input type="submit" onclick="solve();"><input type="Reset" onclick="reset();">
+<p id="staut"></p>
+</body>
+</html>
